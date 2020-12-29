@@ -19,7 +19,7 @@ public class WaterContainerTest {
     @Test
     public void singleContainerHasNoNeighbors() {
         var a = new WaterContainer("A");
-        assertEquals(Collections.emptySet(), a.getNeighbors(a, a));
+        assertEquals(Collections.emptySet(), a.discoverNeighbors(a, a));
     }
 
     @Test
@@ -27,8 +27,8 @@ public class WaterContainerTest {
         var a = new WaterContainer("A");
         var b = new WaterContainer("B");
         a.connectTo(b);
-        assertEquals(Set.of(b), a.getNeighbors(a, a));
-        assertEquals(Set.of(a), b.getNeighbors(b, b));
+        assertEquals(Set.of(b), a.discoverNeighbors(a, a));
+        assertEquals(Set.of(a), b.discoverNeighbors(b, b));
     }
 
     @Test
@@ -39,9 +39,9 @@ public class WaterContainerTest {
         b.connectTo(a);
         b.connectTo(c);
 
-        assertEquals(Set.of(a, c), b.getNeighbors(b, b));
-        assertEquals(Set.of(b, c), a.getNeighbors(a, a));
-        assertEquals(Set.of(a, b), c.getNeighbors(c, c));
+        assertEquals(Set.of(a, c), b.discoverNeighbors(b, b));
+        assertEquals(Set.of(b, c), a.discoverNeighbors(a, a));
+        assertEquals(Set.of(a, b), c.discoverNeighbors(c, c));
     }
 
     @Test
@@ -52,9 +52,9 @@ public class WaterContainerTest {
         a.connectTo(b);
         b.connectTo(c);
 
-        assertEquals(Set.of(a, c), b.getNeighbors(b, b));
-        assertEquals(Set.of(b, c), a.getNeighbors(a, a));
-        assertEquals(Set.of(a, b), c.getNeighbors(c, c));
+        assertEquals(Set.of(a, c), b.discoverNeighbors(b, b));
+        assertEquals(Set.of(b, c), a.discoverNeighbors(a, a));
+        assertEquals(Set.of(a, b), c.discoverNeighbors(c, c));
     }
 
     @Test
@@ -66,9 +66,9 @@ public class WaterContainerTest {
         b.connectTo(c);
         c.connectTo(a);
 
-        assertEquals(Set.of(a, c), b.getNeighbors(b, b));
-        assertEquals(Set.of(b, c), a.getNeighbors(a, a));
-        assertEquals(Set.of(a, b), c.getNeighbors(c, c));
+        assertEquals(Set.of(a, c), b.discoverNeighbors(b, b));
+        assertEquals(Set.of(b, c), a.discoverNeighbors(a, a));
+        assertEquals(Set.of(a, b), c.discoverNeighbors(c, c));
     }
 
     @Test
@@ -125,5 +125,40 @@ public class WaterContainerTest {
         assertEquals(5, c.getAmount());
         assertEquals(5, d.getAmount());
     }
+
+    @Test
+    public void addWaterLater() {
+        var a = new WaterContainer("A");
+        var b = new WaterContainer("B");
+        a.connectTo(b);
+        a.addWater(12);
+
+        assertEquals(6, a.getAmount());
+        assertEquals(6, b.getAmount());
+    }
+
+    @Test
+    public void robustness() {
+        var a = new WaterContainer("A");
+        var b = new WaterContainer("B");
+
+        a.addWater(12);
+        a.connectTo(b);
+        a.connectTo(b);
+        b.connectTo(a);
+
+        assertEquals(6, a.getAmount());
+        assertEquals(6, b.getAmount());
+    }
+
+    @Test
+    public void cantConnectToMyself() {
+        var a = new WaterContainer("A");
+        var b = new WaterContainer("B");
+
+        assertThrows(UnsupportedOperationException.class, () -> a.connectTo(a));
+    }
+
+
 
 }

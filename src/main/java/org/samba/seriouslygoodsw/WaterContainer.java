@@ -6,9 +6,9 @@ import java.util.Set;
 
 public class WaterContainer {
 
-    private Set<WaterContainer> neighbors = new HashSet<>();
+    private final Set<WaterContainer> neighbors = new HashSet<>();
     private long amount;
-    private String name;
+    private final String name;
 
 
     public WaterContainer(String name) {
@@ -17,26 +17,29 @@ public class WaterContainer {
 
     public void addWater(long newWater) {
         this.amount += newWater;
-        // TODO distribute also here + test
+        distributeWater();
     }
 
     public void connectTo(WaterContainer neighbour) {
-        this.newNeighbor(neighbour);
-        neighbour.newNeighbor(this);
+        if (neighbour.equals(this))
+            throw new UnsupportedOperationException("Can't connect to myself");
+
+        this.addNewNeighbor(neighbour);
+        neighbour.addNewNeighbor(this);
 
         distributeWater();
     }
 
-    void newNeighbor(WaterContainer neighbour) {
+    void addNewNeighbor(WaterContainer neighbour) {
         this.neighbors.add(neighbour);
     }
 
     private void distributeWater() {
-        var allConnectedContainers = getNeighbors(this, this);
+        var allConnectedContainers = discoverNeighbors(this, this);
         allConnectedContainers.add(this);
 
         var totalSum = allConnectedContainers.stream()
-                .map(waterContainer -> waterContainer.getAmount())
+                .map(WaterContainer::getAmount)
                 .mapToLong(Long::longValue)
                 .sum();
 
@@ -45,19 +48,22 @@ public class WaterContainer {
         allConnectedContainers.forEach(waterContainer -> waterContainer.setAmount(newAmount));
     }
 
-    Set<WaterContainer> getNeighbors(WaterContainer originalCaller, WaterContainer caller) {
+    // recursively find all neighbors of a container.
+    // param "originalCaller": to detect a loop
+    // param "caller": to prevent discovering back to the calling node
+    Set<WaterContainer> discoverNeighbors(WaterContainer originalCaller, WaterContainer caller) {
+        // it is not the first invocation and the current container is the originally calling one, we're at the end of this leaf
         if (! caller.equals(originalCaller) && this.equals(originalCaller)) return Collections.emptySet();
 
-        var foundNeighbors = new HashSet<WaterContainer>();
         // add neighbors except caller and original caller
-        foundNeighbors.addAll(neighbors);
+        var foundNeighbors = new HashSet<>(neighbors);
         foundNeighbors.remove(caller);
         foundNeighbors.remove(originalCaller);
 
-        // continue finding neighbors neighbors excluding the caller (infinite loop)
+        // continue finding neighbors neighbors excluding the caller (prevent infinite loop)
         for (WaterContainer c : neighbors) {
             if (c.equals(caller)) continue;
-            foundNeighbors.addAll(c.getNeighbors(originalCaller, this));
+            foundNeighbors.addAll(c.discoverNeighbors(originalCaller, this));
         }
 
         return foundNeighbors;
