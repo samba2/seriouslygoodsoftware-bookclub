@@ -48,17 +48,21 @@ public class WaterContainer {
         allConnectedContainers.forEach(waterContainer -> waterContainer.setAmount(newAmount));
     }
 
-    // recursively find all neighbors of a container.
-    // param "originalCaller": to detect a loop
-    // param "caller": to prevent discovering back to the calling node
+    /**
+     * Recursively find all neighbors of a container.
+     *
+     * iteration ends when:
+     * - a container has no other neighbor except the calling one
+     * - a loop of connected containers is detected
+     * In both cases an empty Set is returned.
+     *
+     * param "originalCaller": to detect a container loop Figure 1.4 left
+     * param "caller": to prevent discovering back to the calling node
+     */
     Set<WaterContainer> discoverNeighbors(WaterContainer originalCaller, WaterContainer caller) {
-        // it is not the first invocation and the current container is the originally calling one, we're at the end of this leaf
-        if (! caller.equals(originalCaller) && this.equals(originalCaller)) return Collections.emptySet();
+        if (isContainerLoop(originalCaller, caller)) return Collections.emptySet();
 
-        // add neighbors except caller and original caller
         var foundNeighbors = new HashSet<>(neighbors);
-        foundNeighbors.remove(caller);
-        foundNeighbors.remove(originalCaller);
 
         // continue finding neighbors neighbors excluding the caller (prevent infinite loop)
         for (WaterContainer c : neighbors) {
@@ -67,6 +71,12 @@ public class WaterContainer {
         }
 
         return foundNeighbors;
+    }
+
+    // it is not the first invocation and
+    // the current container is the originally calling one, we're at the end of this leaf
+    private boolean isContainerLoop(WaterContainer originalCaller, WaterContainer caller) {
+        return ! caller.equals(originalCaller) && this.equals(originalCaller);
     }
 
     protected void setAmount(long amount) {
