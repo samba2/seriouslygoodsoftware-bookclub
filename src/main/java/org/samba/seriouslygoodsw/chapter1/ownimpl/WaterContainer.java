@@ -1,4 +1,4 @@
-package org.samba.seriouslygoodsw;
+package org.samba.seriouslygoodsw.chapter1.ownimpl;
 
 import java.util.Collections;
 import java.util.HashSet;

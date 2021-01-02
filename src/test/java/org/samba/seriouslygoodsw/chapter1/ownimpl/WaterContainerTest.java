@@ -1,4 +1,4 @@
-package org.samba.seriouslygoodsw;
+package org.samba.seriouslygoodsw.chapter1.ownimpl;
 
 import org.junit.jupiter.api.Test;
 
@@ -158,7 +158,6 @@ public class WaterContainerTest {
 
         assertThrows(UnsupportedOperationException.class, () -> a.connectTo(a));
     }
-
 
 
 }
